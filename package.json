@@ -1,0 +1,24 @@
+{
+    "name": "n-body-simulator-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "description": "N-body simulator using the Barnes-Hut algorithm in TypeScript",
+    "scripts": {
+      "dev": "npm run dev --workspaces --if-present",
+      "build": "npm run build --workspaces --if-present",
+      "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist"
+    },
+    "workspaces": [
+      "packages/*"
+    ],
+    "keywords": [
+      "n-body",
+      "barnes-hut",
+      "octree",
+      "physics",
+      "typescript",
+      "threejs"
+    ],
+    "author": "bbolv",
+    "license": "MIT"
+  }
