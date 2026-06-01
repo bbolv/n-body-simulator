@@ -26,7 +26,7 @@ graph TD
     end
 
     subgraph WT [WEB WORKER THREAD]
-        Loop[Worker Loop] --> Core[@n-body/core Engine]
+        Loop[Worker Loop] --> Core["@n-body/core Engine"]
     end
 
     Scene <-->|Transferable Array Buffer<br>Zero-Copy Data| Loop
