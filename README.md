@@ -19,25 +19,21 @@ This project solves the performance ceiling by implementing the **Barnes-Hut Alg
 
 The system leverages a decoupled, multi-threaded frontend architecture tailored for high-frequency numerical calculations without dropping frames.
 
-+------------------------------------------------------------+
-|                       MAIN THREAD                          |
-|  +-------------------+          +-----------------------+  |
-|  |   web-app (UI)    | <------->|    Three.js Scene     |  |
-|  +-------------------+          +-----------------------+  |
-+---------------------------------------------^--------------+
-|
-Transferable Array Buffer
-(Zero-Copy Shared Position Data)
-|
-+---------------------------------------------v--------------+
-|                      WEB WORKER THREAD                     |
-|  +-------------------+          +-----------------------+  |
-|  |    worker loop    | -------->|  @n-body/core Engine  |  |
-|  | (Fixed Timestep)  |          | (Octree & Barnes-Hut) |  |
-|  +-------------------+          +-----------------------+  |
-+------------------------------------------------------------+
+```mermaid
+graph TD
+    subgraph MT [MAIN THREAD]
+        UI[web-app UI] <--> Scene[Three.js Scene]
+    end
 
+    subgraph WT [WEB WORKER THREAD]
+        Loop[Worker Loop] --> Core[@n-body/core Engine]
+    end
 
+    Scene <-->|Transferable Array Buffer<br>Zero-Copy Data| Loop
+    
+    style MT fill:#1f1f2e,stroke:#333,stroke-width:2px,color:#fff
+    style WT fill:#1f1f2e,stroke:#333,stroke-width:2px,color:#fff
+```
 
 The project is structured as a monorepo to keep track of the responsabilities clearly. 
 
