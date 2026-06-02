@@ -58,4 +58,26 @@ export class Particle {
             this.velocity.clone()
         )
     }
+
+    /**
+     * Integrate the equations of motion using the simplectict method
+     * 1. Compute the accelereation from the net force (a = F / m)
+     * 2. Update the velocity ( v = v0 + a * dt)
+     * 3. Update the position using the NEW velocity (x = x0 + v_new * dt)
+     * @param netForce 
+     * @param dt 
+     * @returns 
+     */
+    public integrate(netForce: Vector3D, dt: number): void {
+        if (this.mass === 0) return;
+
+        // 1. and 2. Update velocity
+        const acceleration = netForce.scale(1 / this.mass);
+        const deltaVel = acceleration.scale(dt);
+        this.velocity = this.velocity.add(deltaVel);
+
+        // 3. Update the position with the updated velocity
+        const deltaPos = this.velocity.scale(dt);
+        this.position = this.position.add(deltaPos);
+    }
 }

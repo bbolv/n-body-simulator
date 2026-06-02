@@ -110,4 +110,69 @@ export class OctreeNode {
 
         return false;
     }
+
+    public static readonly G: number = 1.0; // Gravitational constant normalized to 1
+    public static readonly THETA: number = 0.5; //Barnes-Hut approximation threshold
+    public static readonly SOFTENING = 0.15 // Softening parameter to avoid division by zero (singularities)
+
+    /**
+     * Compute the net gravitational force on a target particle due to all particles in the subtree.
+     * @param target The particle to compute the force on
+     * @returns The net gravitational force vector on the target particle
+     */
+    public computeForce(target: Particle): Vector3D {
+        let netForce = new Vector3D(0,0,0);
+
+        // If the node is empyt or it is the same particle, there is no force to compute
+        if (this.totalMass === 0 || (this.body && this.body.id === target.id)) return netForce;
+
+        // Case 1: The node is a leaf (a single particle)
+        if (this.isLeaf() && this.body) {
+            return this.calculatePairwiseForce(target, this.body.position, this.body.mass);
+        }
+
+        // Case 2: The node is an internal node (has children). Compute the Barnes-Hut criterion
+        const distanceVector = this.centerOfMass.sub(target.position);
+        const distance = distanceVector.magnitude();
+
+        if (distance === 0) return netForce; // Avoid division by zero
+        
+        const s = this.boundary.halfLength * 2; // Width of the cube 
+
+        //It is reasonable to approximate the node as a single particle: We are sufficiently far away
+        if (s / distance < OctreeNode.THETA) {
+            return this.calculatePairwiseForce(target, this.centerOfMass, this.totalMass);
+        }
+
+        // Otherwise, we need to sum the forces from all children
+        if (this.children) {
+            for (const child of this.children) {
+                netForce = netForce.add(child.computeForce(target));
+            }
+        }
+
+        return netForce;
+    }
+
+    /**
+     * Compute the pairwise gravitational force between a target particle and a source particle.
+     * @param target The particle to compute the force on
+     * @param sourcePos The position of the source particle
+     * @param sourceMass The mass of the source particle
+     * @returns The pairwise gravitational force vector between the target and source particles
+     */
+    private calculatePairwiseForce (target: Particle, sourcePos: Vector3D, sourceMass: number): Vector3D {
+        const direction = sourcePos.sub(target.position);
+        const distanceSq = direction.magnitudeSq();
+
+        // Compute the softened distance to avoid division by zero
+        const softenedDistanceSq = distanceSq + (OctreeNode.SOFTENING ** 2);
+        const distance = Math.sqrt(softenedDistanceSq);
+
+        // Apply Newtonian gravitational force law: F = G * (m1 * m2) / r^2
+        const forceMagnitude = (OctreeNode.G * target.mass * sourceMass) / distanceSq;
+
+        // Return the force vector in the direction of the source particle: magnitude * normalized direction
+        return direction.scale(forceMagnitude / distance);
+    }
 }
